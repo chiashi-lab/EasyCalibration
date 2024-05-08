@@ -8,7 +8,7 @@ from tkinterdnd2 import TkinterDnD, DND_FILES
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from calibrator import Calibrator
+from Sakakibaracalibrator import Calibrator
 from dataloader import DataLoader
 from tooltip import TtkTooltipLabel
 
@@ -148,7 +148,7 @@ class MainWindow(tk.Frame):
         self.optionmenu_material = ttk.OptionMenu(frame_ref, self.material, self.calibrator.get_material_list()[0], *self.calibrator.get_material_list())
         self.optionmenu_material.config(width=10)
         self.optionmenu_material['menu'].config(font=font_sm)
-        self.combobox_center = ttk.Combobox(frame_ref, textvariable=self.center, values=[500, 630, 760], justify=tk.CENTER, state=tk.DISABLED)
+        self.combobox_center = ttk.Combobox(frame_ref, textvariable=self.center, values=[500, 630, 760, 880, 1050], justify=tk.CENTER, state=tk.DISABLED)
         self.combobox_center.config(width=10)
         optionmenu_dimension = ttk.OptionMenu(frame_ref, self.dimension, *self.calibrator.get_dimension_list())
         optionmenu_dimension.config(width=10)
@@ -252,12 +252,12 @@ class MainWindow(tk.Frame):
             return
         spec_ref = self.dl_ref.spec_dict[self.filename_ref.get()]
         self.calibrator.set_data(spec_ref.xdata, spec_ref.ydata)
-        if self.measurement.get() == 'Rayleigh':
-            wavelength_range = 134
-            initial_xdata = np.linspace(self.center.get() - wavelength_range / 2,
-                                        self.center.get() + wavelength_range / 2,
-                                        self.dl_ref.spec_dict[self.filename_ref.get()].xdata.shape[0])
-            self.calibrator.xdata = initial_xdata
+        # if self.measurement.get() == 'Rayleigh':
+        #     wavelength_range = 117
+        #     initial_xdata = np.linspace(self.center.get() - wavelength_range / 2,
+        #                                 self.center.get() + wavelength_range / 2,
+        #                                 self.dl_ref.spec_dict[self.filename_ref.get()].xdata.shape[0])
+        #     self.calibrator.xdata = initial_xdata
         self.calibrator.set_measurement(self.measurement.get())
         self.calibrator.set_material(self.material.get())
         self.calibrator.set_dimension(int(self.dimension.get()[0]))
@@ -338,7 +338,7 @@ class MainWindow(tk.Frame):
             self.calibrator.set_measurement('Rayleigh')
             self.measurement.set('Rayleigh')
         self.change_measurement()
-        for center in ['500', '630', '760']:
+        for center in ['500', '630', '760','880', '1050']:
             if center in filename:
                 self.center.set(float(center))
 
