@@ -8,7 +8,7 @@ from tkinterdnd2 import TkinterDnD, DND_FILES
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from calibrator import Calibrator
+from Sakakibaracalibrator import Calibrator
 from dataloader import DataLoader
 from tooltip import TtkTooltipLabel
 
