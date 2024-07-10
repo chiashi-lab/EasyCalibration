@@ -88,7 +88,7 @@ class MainWindow(tk.Frame):
         style.configure('TCombobox', font=font_md, padding=[20, 4, 0, 4], foreground='black')
         style.configure('TTreeview', font=font_md, foreground='black')
 
-        self.width_canvas = 800
+        self.width_canvas = 1000
         self.height_canvas = 600
         dpi = 50
         if os.name == 'posix':
@@ -148,7 +148,7 @@ class MainWindow(tk.Frame):
         self.optionmenu_material = ttk.OptionMenu(frame_ref, self.material, self.calibrator.get_material_list()[0], *self.calibrator.get_material_list())
         self.optionmenu_material.config(width=10)
         self.optionmenu_material['menu'].config(font=font_sm)
-        self.combobox_center = ttk.Combobox(frame_ref, textvariable=self.center, values=[500, 630, 760], justify=tk.CENTER, state=tk.DISABLED)
+        self.combobox_center = ttk.Combobox(frame_ref, textvariable=self.center, values=[500, 630, 760, 880, 1050], justify=tk.CENTER, state=tk.DISABLED)
         self.combobox_center.config(width=10)
         optionmenu_dimension = ttk.OptionMenu(frame_ref, self.dimension, *self.calibrator.get_dimension_list())
         optionmenu_dimension.config(width=10)
@@ -262,7 +262,10 @@ class MainWindow(tk.Frame):
         self.calibrator.set_material(self.material.get())
         self.calibrator.set_dimension(int(self.dimension.get()[0]))
         self.calibrator.set_function(self.function.get())
-        ok = self.calibrator.calibrate(mode='manual', ranges=self.ranges, x_true=self.assign_peaks())
+        curvefit = True
+        if self.measurement.get() == 'PL':
+            curvefit = False
+        ok = self.calibrator.calibrate(mode='manual', ranges=self.ranges, x_true=self.assign_peaks(), curvefit=curvefit)
         if not ok:
             self.msg.set('Calibration failed.')
             return
@@ -338,7 +341,7 @@ class MainWindow(tk.Frame):
             self.calibrator.set_measurement('Rayleigh')
             self.measurement.set('Rayleigh')
         self.change_measurement()
-        for center in ['500', '630', '760']:
+        for center in ['500', '630', '760','880', '1050']:
             if center in filename:
                 self.center.set(float(center))
 
@@ -354,10 +357,17 @@ class MainWindow(tk.Frame):
         self.calibrator.set_material(self.material.get())
 
     def change_measurement(self, event=None):
+        #レイリーの時は中心波長を選択できるようにする。PLラマンの時は選択できないようにする
+        #PLの時はピーク検出後のカーブフィット用の関数を選択できないようにする。レイリーラマンの時は選択できるようにする
         if self.measurement.get() == 'Raman':
             self.combobox_center.config(state=tk.DISABLED)
+            self.optionmenu_function.config(state=tk.ACTIVE)
         elif self.measurement.get() == 'Rayleigh':
             self.combobox_center.config(state=tk.ACTIVE)
+            self.optionmenu_function.config(state=tk.ACTIVE)
+        elif self.measurement.get() == 'PL':
+            self.combobox_center.config(state=tk.DISABLED)
+            self.optionmenu_function.config(state=tk.DISABLED)
         self.calibrator.set_measurement(self.measurement.get())
         # update material
         self.optionmenu_material['menu'].delete(0, 'end')
