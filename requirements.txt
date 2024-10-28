@@ -2,6 +2,6 @@ numpy
 pandas
 matplotlib
 tkinterdnd2
-git+https://github.com/PlusF/DataLoader
-git+https://github.com/PlusF/Calibrator
-git+https://github.com/PlusF/Tooltip
+git+https://github.com/chiashi-lab/DataLoader
+git+https://github.com/chiashi-lab/Calibrator
+git+https://github.com/chiashi-lab/Tooltip
