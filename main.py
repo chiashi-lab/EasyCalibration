@@ -159,6 +159,10 @@ class MainWindow(tk.Frame):
         button_assign_manually = ttk.Button(frame_ref, text='ASSIGN', command=self.open_assign_window)
         self.frame_assign = None
         self.button_calibrate = ttk.Button(frame_ref, text='CALIBRATE', command=self.calibrate, state=tk.DISABLED)
+        self.prominencebox = ttk.Entry(frame_ref, width=10, font=font_sm, justify=tk.CENTER)
+        self.prominencebox.insert(0, "100")
+        self.prominencebox.config(state=tk.DISABLED)
+        self.prominencelabel = ttk.Label(frame_ref, text='Prominence(default:100)', font=font_sm, justify=tk.RIGHT, state=tk.DISABLED)
         self.label_ref.grid(row=0, column=0, columnspan=6)
         optionmenu_measurement.grid(row=1, column=0)
         self.optionmenu_material.grid(row=1, column=1)
@@ -166,7 +170,9 @@ class MainWindow(tk.Frame):
         optionmenu_dimension.grid(row=2, column=0)
         self.optionmenu_function.grid(row=2, column=1)
         button_assign_manually.grid(row=2, column=2)
-        self.button_calibrate.grid(row=3, column=0, columnspan=3)
+        self.prominencebox.grid(row=3, column=1)
+        self.prominencelabel.grid(row=3, column=0)
+        self.button_calibrate.grid(row=4, column=0, columnspan=3)
 
         # frame_msg
         self.msg = tk.StringVar(value='Please drag & drop data files.')
@@ -265,7 +271,7 @@ class MainWindow(tk.Frame):
         curvefit = True
         if self.measurement.get() == 'PL':
             curvefit = False
-        ok = self.calibrator.calibrate(mode='manual', ranges=self.ranges, x_true=self.assign_peaks(), curvefit=curvefit)
+        ok = self.calibrator.calibrate(mode='manual', ranges=self.ranges, x_true=self.assign_peaks(), curvefit=curvefit, prominence=int(self.prominencebox.get()))
         if not ok:
             self.msg.set('Calibration failed.')
             return
@@ -320,6 +326,8 @@ class MainWindow(tk.Frame):
             self.check_data_type(filename)
             self.button_calibrate.config(state=tk.ACTIVE)
             self.button_download.config(state=tk.DISABLED)
+            self.prominencebox.config(state=tk.ACTIVE)
+            self.prominencelabel.config(state=tk.ACTIVE)
         else:  # data to calibrate
             self.dl_raw.load_files(filenames)
             self.show_spectrum(self.dl_raw.spec_dict[filenames[0]])
