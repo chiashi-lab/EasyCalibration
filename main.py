@@ -1,4 +1,5 @@
 import os
+import re
 import webbrowser
 import numpy as np
 import tkinter as tk
@@ -329,6 +330,19 @@ class MainWindow(tk.Frame):
             self.prominencebox.config(state=tk.ACTIVE)
             self.prominencelabel.config(state=tk.ACTIVE)
         else:  # data to calibrate
+            if os.path.isdir(filenames[0]):
+                rootdir = filenames[0]
+                filenames = []
+                for root, _, filelist in os.walk(rootdir):
+                    if len(filelist):
+                        for filename in filelist:
+                            if filename == '.DS_Store' or re.match(r'log.*\.txt', filename):
+                                continue
+                            filepath = os.path.join(root, filename)
+                            filenames.append(filepath)
+                    else:
+                        print(f"{root}にファイルが存在しません。次のフォルダを読み込みます")
+                        continue
             self.dl_raw.load_files(filenames)
             self.show_spectrum(self.dl_raw.spec_dict[filenames[0]])
             self.update_treeview()
