@@ -88,7 +88,7 @@ class MainWindow(tk.Frame):
         style.configure('TCombobox', font=font_md, padding=[20, 4, 0, 4], foreground='black')
         style.configure('TTreeview', font=font_md, foreground='black')
 
-        self.width_canvas = 1000
+        self.width_canvas = 800
         self.height_canvas = 600
         dpi = 50
         if os.name == 'posix':
@@ -196,7 +196,12 @@ class MainWindow(tk.Frame):
         self.canvas_drop.create_text(self.width_canvas / 2, self.height_canvas * 3 / 4, text='Reference Data',
                                      font=('Arial', 30))
 
-    def open_assign_window(self):
+    def open_assign_window(self) -> None:
+        if self.new_window is not None and self.new_window.winfo_exists():
+            # 既にウィンドウが開いている場合はそのウィンドウを前面に出す
+            self.new_window.lift()
+            self.new_window.focus()
+            return
         self.new_window = tk.Toplevel(self.master)
         self.new_window.title('Assign Peaks')
 
@@ -212,12 +217,21 @@ class MainWindow(tk.Frame):
 
         self.refresh_assign_window()
 
-    def refresh_assign_window(self):
-        # clear
-        for w in self.widgets_assign.values():
-            for ww in w:
-                ww.destroy()
+    def refresh_assign_window(self) -> None:
+        if self.new_window is None or not self.new_window.winfo_exists(): # 既にウインドウが閉じている場合はなにもしない
+            return
+        # combobox_widgetsを削除し、既に入力済みの値を保存
+        already_input = {} #keyはstr(self.ranges.index(r)) valuesはcomboboxの値
+        for label, combobox in self.widgets_assign.values():
+            try: # comboboxが存在しない場合もdestroyメソッドはエラーを出さないが一応
+                if combobox.winfo_exists():
+                    already_input[str(label.cget('text'))] = combobox.get() #comboboxが存在する場合のみ値を保存
+                label.destroy()
+                combobox.destroy()
+            except Exception as e:
+                print(f"Error occurred while destroying widgets: {e}")
         self.widgets_assign = {}
+
         # create
         self.calibrator.set_measurement(self.measurement.get())
         self.calibrator.set_material(self.material.get())
@@ -226,12 +240,15 @@ class MainWindow(tk.Frame):
         for i, (r, auto) in enumerate(zip(self.ranges, auto_x_true)):
             label_index = ttk.Label(self.frame_assign, text=str(self.ranges.index(r)))
             combobox_x = ttk.Combobox(self.frame_assign, values=list(x_true), justify=tk.CENTER)
-            combobox_x.set(auto)
+            if str(self.ranges.index(r)) in already_input:
+                combobox_x.set(already_input[str(self.ranges.index(r))])
+            else:
+                combobox_x.set(auto)
             label_index.grid(row=i + 2, column=0)
             combobox_x.grid(row=i + 2, column=1)
-            self.widgets_assign[i] = (label_index, combobox_x)
+            self.widgets_assign[self.ranges.index(r)] = (label_index, combobox_x)
 
-    def assign_peaks_automatically(self):
+    def assign_peaks_automatically(self) -> list:
         x_true = self.calibrator.get_true_x()
         found_x_true = []
         for x0, y0, x1, y1 in self.ranges:
@@ -528,6 +545,7 @@ class MainWindow(tk.Frame):
         self.texts.pop()
         self.ranges.pop()
         self.canvas.draw()
+        self.refresh_assign_window()
 
     def download(self) -> None:
         msg = 'Successfully downloaded.\n'
@@ -542,6 +560,8 @@ class MainWindow(tk.Frame):
         self.texts = []
         self.ranges = []
         self.refresh_assign_window()
+        if self.new_window is not None and self.new_window.winfo_exists():
+            self.new_window.destroy()
         self.treeview.delete(*self.treeview.get_children())
         self.filename_ref.set('')
         self.label_ref.set_tooltip_text('')
