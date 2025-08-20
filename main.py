@@ -218,14 +218,14 @@ class MainWindow(tk.Frame):
         self.refresh_assign_window()
 
     def refresh_assign_window(self) -> None:
-        if self.new_window is None or not self.new_window.winfo_exists(): #既にウインドウが閉じている場合はなにもしない
+        if self.new_window is None or not self.new_window.winfo_exists(): # 既にウインドウが閉じている場合はなにもしない
             return
         # combobox_widgetsを削除し、既に入力済みの値を保存
         already_input = {} #keyはstr(self.ranges.index(r)) valuesはcomboboxの値
-        for label, combobox  in self.widgets_assign.values():
-            try:#comboboxが存在しない場合もdestroyメソッドはエラーを出さないが一応
+        for label, combobox in self.widgets_assign.values():
+            try: # comboboxが存在しない場合もdestroyメソッドはエラーを出さないが一応
                 if combobox.winfo_exists():
-                    already_input[str(label.cget('text'))] = combobox.get()#comboboxが存在する場合のみ値を保存
+                    already_input[str(label.cget('text'))] = combobox.get() #comboboxが存在する場合のみ値を保存
                 label.destroy()
                 combobox.destroy()
             except Exception as e:
