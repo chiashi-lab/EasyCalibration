@@ -296,6 +296,14 @@ class MainWindow(tk.Frame):
         for spec in self.dl_raw.spec_dict.values():
             setattr(spec, key, value)
 
+    def _should_exclude_file(self, filename:str) -> bool:
+        # 明らかに除外すべきファイルならtrueを返す
+        if filename.endswith('.DS_Store'):
+            return True
+        if re.match(r'log.*\.txt', filename):
+            return True
+        return False
+
     @update_plot
     def drop(self, event=None) -> None:
         self.canvas_drop.place_forget()
@@ -336,7 +344,7 @@ class MainWindow(tk.Frame):
                 for root, _, filelist in os.walk(rootdir):
                     if len(filelist):
                         for filename in filelist:
-                            if filename == '.DS_Store' or re.match(r'log.*\.txt', filename):
+                            if self._should_exclude_file(filename):
                                 continue
                             filepath = os.path.join(root, filename)
                             filenames.append(filepath)
