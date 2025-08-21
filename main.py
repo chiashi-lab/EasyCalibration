@@ -1,4 +1,5 @@
 import os
+import re
 import webbrowser
 import numpy as np
 import tkinter as tk
@@ -312,6 +313,14 @@ class MainWindow(tk.Frame):
         for spec in self.dl_raw.spec_dict.values():
             setattr(spec, key, value)
 
+    def _should_exclude_file(self, filename:str) -> bool:
+        # 明らかに除外すべきファイルならtrueを返す
+        if filename.endswith('.DS_Store'):
+            return True
+        if re.match(r'log.*\.txt', filename):
+            return True
+        return False
+
     @update_plot
     def drop(self, event=None) -> None:
         self.canvas_drop.place_forget()
@@ -346,6 +355,19 @@ class MainWindow(tk.Frame):
             self.prominencebox.config(state=tk.ACTIVE)
             self.prominencelabel.config(state=tk.ACTIVE)
         else:  # data to calibrate
+            if os.path.isdir(filenames[0]):
+                rootdir = filenames[0]
+                filenames = []
+                for root, _, filelist in os.walk(rootdir):
+                    if len(filelist):
+                        for filename in filelist:
+                            if self._should_exclude_file(filename):
+                                continue
+                            filepath = os.path.join(root, filename)
+                            filenames.append(filepath)
+                    else:
+                        print(f"{root}にファイルが存在しません。次のフォルダを読み込みます")
+                        continue
             self.dl_raw.load_files(filenames)
             self.show_spectrum(self.dl_raw.spec_dict[filenames[0]])
             self.update_treeview()
