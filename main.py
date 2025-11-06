@@ -5,6 +5,7 @@ import numpy as np
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import filedialog
 from tkinterdnd2 import TkinterDnD, DND_FILES
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -129,8 +130,10 @@ class MainWindow(tk.Frame):
         self.treeview.bind('<Button-3>', self.delete_data)
 
         self.button_download = ttk.Button(frame_download, text='DOWNLOAD', command=self.download, state=tk.DISABLED)
+        self.button_save_as = ttk.Button(frame_download, text='SAVE AS', command=self.download_with_name, state=tk.DISABLED)
         self.treeview.pack()
         self.button_download.pack()
+        self.button_save_as.pack()
 
         # frame_ref
         self.filename_ref = tk.StringVar(value='')
@@ -295,6 +298,7 @@ class MainWindow(tk.Frame):
             return
         self.button_calibrate.config(state=tk.DISABLED)
         self.button_download.config(state=tk.ACTIVE)
+        self.button_save_as.config(state=tk.ACTIVE)
         msg = 'Successfully calibrated.\nYou can now download the calibrated data.\n'
 
         self.setattr_to_all_raw('xdata', self.calibrator.xdata)
@@ -352,6 +356,7 @@ class MainWindow(tk.Frame):
             self.check_data_type(filename)
             self.button_calibrate.config(state=tk.ACTIVE)
             self.button_download.config(state=tk.DISABLED)
+            self.button_save_as.config(state=tk.DISABLED)
             self.prominencebox.config(state=tk.ACTIVE)
             self.prominencelabel.config(state=tk.ACTIVE)
         else:  # data to calibrate
@@ -372,6 +377,7 @@ class MainWindow(tk.Frame):
             self.show_spectrum(self.dl_raw.spec_dict[filenames[0]])
             self.update_treeview()
             self.button_download.config(state=tk.DISABLED)
+            self.button_save_as.config(state=tk.DISABLED)
 
     def drop_enter(self, event: TkinterDnD.DnDEvent) -> None:
         self.canvas_drop.place(anchor='nw', x=0, y=0)
@@ -576,6 +582,19 @@ class MainWindow(tk.Frame):
             msg += os.path.basename(filename) + '\n'
         self.msg.set(msg)
 
+    def download_with_name(self) -> None:
+        savedir_path = filedialog.askdirectory(title='Select Directory to Save Calibrated Data')
+        if not savedir_path:
+            return
+        msg = 'Successfully downloaded.\n'
+        for filename in self.dl_raw.spec_dict.keys():
+            base_filename = os.path.basename(filename)
+            name, ext = os.path.splitext(base_filename)
+            save_path = os.path.join(savedir_path, f"{name}_calibrated{ext}")
+            self.dl_raw.save(filename, filename_as=save_path)
+            msg += save_path + '\n'
+        self.msg.set(msg)
+
     @update_plot
     def reset(self):
         self.rectangles = []
@@ -591,6 +610,7 @@ class MainWindow(tk.Frame):
         self.dl_ref.__init__()
         self.calibrator.__init__(measurement='Raman', material='sulfur', dimension=1)
         self.button_download.config(state=tk.DISABLED)
+        self.button_save_as.config(state=tk.DISABLED)
         self.button_calibrate.config(state=tk.DISABLED)
         self.msg.set(f'Reset.')
 
