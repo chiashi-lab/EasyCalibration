@@ -131,9 +131,12 @@ class MainWindow(tk.Frame):
 
         self.button_download = ttk.Button(frame_download, text='DOWNLOAD', command=self.download, state=tk.DISABLED)
         self.button_save_as = ttk.Button(frame_download, text='SAVE AS', command=self.download_with_name, state=tk.DISABLED)
+        self.mode_PLline = tk.BooleanVar(value=False)
+        self.check_PLline = tk.Checkbutton(frame_download, text='line PLモード', variable=self.mode_PLline)
         self.treeview.pack()
         self.button_download.pack()
         self.button_save_as.pack()
+        self.check_PLline.pack()
 
         # frame_ref
         self.filename_ref = tk.StringVar(value='')
@@ -587,12 +590,24 @@ class MainWindow(tk.Frame):
         if not savedir_path:
             return
         msg = 'Successfully downloaded.\n'
-        for filename in self.dl_raw.spec_dict.keys():
-            base_filename = os.path.basename(filename)
-            name, ext = os.path.splitext(base_filename)
-            save_path = os.path.join(savedir_path, f"{name}_calibrated{ext}")
-            self.dl_raw.save(filename, filename_as=save_path)
-            msg += save_path + '\n'
+        if self.mode_PLline.get():
+            for filename in self.dl_raw.spec_dict.keys():
+                base_filename = os.path.basename(filename)
+                name, ext = os.path.splitext(base_filename)
+                subdir = os.path.basename(os.path.dirname(filename))
+                mod_savedir_path = os.path.join(savedir_path, subdir)
+                if not os.path.exists(mod_savedir_path):
+                    os.makedirs(mod_savedir_path)
+                save_path = os.path.join(mod_savedir_path, f"{name}_calibrated{ext}")
+                self.dl_raw.save(filename, filename_as=save_path)
+                msg += save_path + '\n'
+        else:
+            for filename in self.dl_raw.spec_dict.keys():
+                base_filename = os.path.basename(filename)
+                name, ext = os.path.splitext(base_filename)
+                save_path = os.path.join(savedir_path, f"{name}_calibrated{ext}")
+                self.dl_raw.save(filename, filename_as=save_path)
+                msg += save_path + '\n'
         self.msg.set(msg)
 
     @update_plot
